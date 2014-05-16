@@ -1,0 +1,23 @@
+package simplestream;
+import org.json.simple.JSONObject;
+
+public class StartRequest{
+
+	JSONObject obj = null;
+	int sleepTime = 100;
+
+	StartRequest(){
+	}
+
+	StartRequest(int st){
+		sleepTime = st;
+	}
+
+	@SuppressWarnings("unchecked")
+	String getJSON(){
+		obj = new JSONObject();
+		obj.put("request","startstream");
+		obj.put("ratelimit",sleepTime);
+		return obj.toJSONString();
+	}
+}

@@ -1,0 +1,38 @@
+package simplestream;
+import org.json.simple.JSONObject;
+
+public class StartStreamReq extends Msg{
+
+	StartStreamReq(){
+	}
+
+	@SuppressWarnings("unchecked")
+	String ToJSON(){
+		JSONObject obj = new JSONObject();
+		obj.put("request","startstream"); 
+		return obj.toJSONString();
+	}
+}
+
+/*
+well u could do something that does either startstream or stopstream
+could be parameterized by something...
+are we repeating code to much?
+but i don't want ToJSON to take an argument.
+we could inherit from request and then set some kind of variable...
+e.g. have instance var request = startstream or stopstream
+which is set in constructor...
+i don't want to repeat code but i want things to be clearest
+i think it's clear to say
+StartStreamReq ssr = new StartStreamRequest();
+ssr.ToJSON();
+
+instead of say request = new Request(startstream); ??
+request.ToJSON();
+
+esp as there are extra possible fields...?
+but those could just be empty instance variables, and we might need 
+to set them regardless...
+
+
+*/
