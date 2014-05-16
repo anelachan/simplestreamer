@@ -17,7 +17,6 @@ public class Server extends Thread{
 	Server(int sp, boolean aL){
 		appLive = aL;
 		sport = sp;
-		clientsRemaining = 3;
 		connections = new ArrayList<JSONObject>(3);
 		this.setSocket();
 		this.setServerData();
