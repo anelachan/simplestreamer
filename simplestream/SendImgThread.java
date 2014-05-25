@@ -5,6 +5,7 @@ import java.io.*;
 public class SendImgThread extends Thread{
 	private DataOutputStream os = null;
 	private int sleepTime = 100;
+    private SimpleStreamer mySimpleStreamer = null;
 
 	SendImgThread(DataOutputStream myOS, int st){
 		os = myOS;
@@ -15,15 +16,19 @@ public class SendImgThread extends Thread{
 	public void run(){
 		while(true){
 			try{
-				ImgResponse imgResp = new ImgResponse("IMAGEDATAHERE");
-				String msgSent = imgResp.toJSONString();
-				os.writeUTF(msgSent);
-				System.out.println("Sent: " + msgSent);
+                // Due to a 64k limit on DataOutputStream.writeUTF(), we have to
+                // simulate our own writeUTF that has no limitations on String length.
+                String msgSent = SetImg.img;
+                byte[] data = msgSent.getBytes("UTF-8");
+                os.writeInt(data.length);
+                os.write(data);
+
+                // System.out.println("Sent: " + msgSent);
 				Thread.sleep(sleepTime);
 			} catch(InterruptedException e){
 				return;
 			} catch(IOException e){
-				System.out.println("Connection: "+e.getMessage());
+				System.out.println("SendImgThread: "+e.getMessage());
 			}
 			if(Thread.interrupted())
 				return;

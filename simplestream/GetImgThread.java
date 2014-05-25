@@ -18,8 +18,15 @@ public class GetImgThread extends Thread{
 	public void run(){
 		while(true){
 			try{
-				String msgReceived = is.readUTF();
-				System.out.println("Received: " + msgReceived);
+                // Due to a 64k limit on DataOutputStream.writeUTF(), we have to
+                // simulate our own writeUTF that has no limitations on String length.
+                // Here, we have created our own 'version' of DataInputStream.readUTF()
+                int length = is.readInt();
+                byte[] data = new byte[length];
+                is.readFully(data);
+                String msgReceived = new String(data,"UTF-8");
+
+				//System.out.println("Received: " + msgReceived);
 				processMsg(msgReceived);
 			} catch(IOException e){
 				return; 
@@ -36,10 +43,15 @@ public class GetImgThread extends Thread{
 			JSONObject obj = new JSONObject(msg);
 			if(obj.get("response").equals("stoppedstream")){ 
 			// for some reason, this msg is never printed and I don't know why...
+            // kc: FIXED. msg not received because stoppedstream msg was not
+            // being placed on outputstream (in MsgPassingThread)
 				socket.close();
 				System.out.println("Closed connection.");
 				throw new InterruptedException();
-			}	
+			} else {
+                SetImg.img = msg;
+            }
+
 		} catch(IOException e){
 			System.out.println("Connection: " + e.getMessage());
 		} catch(JSONException e){

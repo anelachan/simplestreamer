@@ -17,11 +17,11 @@ public class Server extends Thread{
 	Server(int sp, boolean aL){
 		appLive = aL;
 		sport = sp;
-		connections = new ArrayList<JSONObject>(3);
-		this.setSocket();
-		this.setServerData();
-		this.start();
-	}
+	    connections = new ArrayList<JSONObject>(3);
+        this.setSocket();
+        this.setServerData();
+        this.start();
+    }
 
 	private void setSocket(){
 		try{
@@ -49,7 +49,6 @@ public class Server extends Thread{
 		while(appLive){
 			try{
 				Socket clientSocket = listenSocket.accept();
-
 				// add to addresses ArrayList
 				SocketAddress clientIP = clientSocket.getRemoteSocketAddress();
 				String clientIPString = editIP(clientIP);
@@ -83,7 +82,4 @@ public class Server extends Thread{
 		}
 	}
 
-	public static void main(String[] args){
-		Server myServer = new Server(6262,true);
-	}
 }

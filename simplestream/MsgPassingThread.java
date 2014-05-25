@@ -12,7 +12,7 @@ public class MsgPassingThread extends Thread{
 	private Socket socket; // each connected client has own
 	private DataInputStream is = null;
 	private DataOutputStream os = null;
-	// ArrayBlockingQueue<JSONObject> imgQ = null; ...each connected client should get its own?
+	//private ArrayBlockingQueue<ImgResponse> imgQ = null;
 	ArrayList<JSONObject> connections = null; // shared with server
 	JSONObject serverData = null; // shared with server, built by server
 	JSONObject clientData = null; // for each client
@@ -22,7 +22,7 @@ public class MsgPassingThread extends Thread{
 	private int numClients;
 	private int sport = 6262; // client's serving port
 	private boolean stopStream = false;
-	
+
 	MsgPassingThread(Socket s, ArrayList<JSONObject> addresses, JSONObject sd){
 		socket = s;
 		connections = addresses; 
@@ -90,6 +90,7 @@ public class MsgPassingThread extends Thread{
 				sendImgThread.interrupt();
 				GenericResponse stopResp = new GenericResponse("stoppedstream");
 				String stopMsg = stopResp.toJSONString();
+                os.writeUTF(stopMsg);
 				System.out.println("Sent: " + stopMsg);
 				socket.close();
 				System.out.println("Connection closed.");
@@ -111,12 +112,12 @@ public class MsgPassingThread extends Thread{
 				assert(false); // client should not send anything besides startstream
 
 			if(obj.has("ratelimit")){
-				int st = (int)obj.get("ratelimit");
+				int st = (Integer)obj.get("ratelimit");
 				if (st > 100) sleepTime = st; // ignore if <= 100
 			}
 			if(obj.has("sport")){
-				sport = (int)obj.get("sport"); // otherwise defaults to 6262
-			}
+				sport = (Integer)obj.get("sport"); // otherwise defaults to 6262
+            }
 
 			/* store client port info */
 			clientData = connections.get(connections.size() - 1);
