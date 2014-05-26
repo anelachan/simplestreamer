@@ -25,8 +25,6 @@ public class LocalViewer extends Thread {
         JFrame frame = null;
         String imgData = null;
         String img = null;
-        //ArrayBlockingQueue<String> queue = null;
-        //ArrayBlockingQueue<String> imgQueue = new ArrayBlockingQueue<String>(QUEUE_MAX_LENGTH);
 
         try {
             frame = new JFrame("Simple Stream Viewer");
@@ -40,13 +38,6 @@ public class LocalViewer extends Thread {
 
         while(true) {
             if((img = SetImg.img) != null) {
-                /*
-                try {
-                    queue.put(img);
-                } catch (InterruptedException e) {
-                    System.out.println("FramedViewer: " + e.getMessage());
-                }
-                */
 
                 try {
                     org.json.JSONObject obj = new org.json.JSONObject(img);
@@ -68,10 +59,4 @@ public class LocalViewer extends Thread {
             }
         }
     }
-
-    private static boolean isNullOrBlank(String s)
-    {
-        return (s==null || s.trim().equals(""));
-    }
-
 }

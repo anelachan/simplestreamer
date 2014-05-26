@@ -53,12 +53,13 @@ public class MsgPassingThread extends Thread{
 			if(numClients <= 3) // includes current client!
 				this.runNormal(startMsg);
 			else{
-				connections = new ArrayList<JSONObject>(connections.subList(0,2)); // slice to size 3
+                //ArrayList.subList(fromIndex,toIndex):  Returns a view of the portion of this list between the specified fromIndex, inclusive, and toIndex, exclusive.
+				connections = new ArrayList<JSONObject>(connections.subList(0,3)); // slice to size 3
 				OverloadedResponse overloadResp = new OverloadedResponse(connections,serverData);
 				String overloadMsg = overloadResp.toJSONString();
 				
 				os.writeUTF(overloadMsg);
-				System.out.println("Sent: " + overloadMsg);
+				System.out.println("OverloadedResponse: " + overloadMsg);
 			}
 		} catch(IOException e){
 			System.out.println("Connection: " + e.getMessage());

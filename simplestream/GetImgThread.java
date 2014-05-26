@@ -6,6 +6,7 @@ import org.json.JSONException;
 
 public class GetImgThread extends Thread{
 	// this may also hook up to local Viewer and decompress and play?
+    // kc: local Viewer has already been instantiated, and waits for frames
 	private DataInputStream is;
 	private Socket socket;
 

@@ -47,22 +47,21 @@ public class SimpleStreamer{
 
         appLive = true;
         Viewer myViewer = new Viewer();
+        // uncomment line below prior to final projected delivery. commented out currently to ease load during testing.
         // LocalViewer localViewer = new LocalViewer(myViewer);
+        Server server = new Server(sport, appLive);
         keyboard = new Scanner(System.in);
 
         if (hostName != null) {
-            // Typical Command Line Argument for Remote Mode
+            // example command line argument for remote mode
             // -sport 6263 -remote localhost -rport 6262 -rate 400
             mode = REMOTE_MODE;
-            //LocalViewer localViewer = new LocalViewer(myViewer);
             SetImgThread setImgThread = new SetImgThread();
-
             Client client = new Client(sport, hostName, rport, sleepTime, keyboard, appLive);
             // having 6 parameters is less than ideal but other option is nesting
         }
         else {
             mode = LOCAL_MODE;
-            Server server = new Server(sport, appLive);
             SetImgThread setImgThread = new SetImgThread();
         }
 	}
@@ -107,7 +106,7 @@ public class SimpleStreamer{
             }
         }
 
-        // getters for Command Line Arguments
+        // getters for command line arguments
         public int getSport() {
             return sport;
         }

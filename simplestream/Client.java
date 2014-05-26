@@ -37,19 +37,20 @@ public class Client extends Thread{
         String startAck = null;
 
 		try{
-            startAck = establishConnection(sport, hostName, rport, sleepTime, keyboard, appLive);
+            startAck = processUntilStartAck(sport, hostName, rport, sleepTime, keyboard, appLive);
 
             boolean serverOverloaded = processStartAck(startAck);
 
             if(serverOverloaded) {
                 System.out.println("Sorry server is overloaded.");
+                // Close current datastreams and socket
                 is.close();
                 os.close();
                 s.close();
 
                 // TODO: implement handover functionality here
-                String clients = processHandoverFields("clients", startAck);
-                String server = processHandoverFields("server", startAck);
+                String clients = processHandoverList("clients", startAck);
+                String server = processHandoverList("server", startAck);
 
                 JSONObject serverData = null;
                 JSONArray connections = null;
@@ -77,14 +78,16 @@ public class Client extends Thread{
 
                 while(serverOverloaded) {
 
+                    // First try the server in the overloaded msg response
                     System.out.println("Server - IP: " + serverIP + " port: " + serverPort);
-                    startAck = establishConnection(sport, serverIP, serverPort, sleepTime, keyboard, appLive);
+                    startAck = processUntilStartAck(sport, serverIP, serverPort, sleepTime, keyboard, appLive);
                     serverOverloaded = processStartAck(startAck);
                     System.out.println("serverOverloaded:" + serverOverloaded);
                     if (!serverOverloaded) {
                         break;
                     }
 
+                    // Next try each of the 3 clients in the overloaded msg response
                     for (int i = 0; i < list.size(); i++) {
                         try {
                             clientData = new JSONObject(list.get(i).toString());
@@ -94,7 +97,7 @@ public class Client extends Thread{
                             System.out.println("JSONObject: " + e.getMessage());
                         }
                         System.out.println("Client " + i + " - IP: " + clientIP + " port: " + clientPort);
-                        startAck = establishConnection(sport, clientIP, clientPort, sleepTime, keyboard, appLive);
+                        startAck = processUntilStartAck(sport, clientIP, clientPort, sleepTime, keyboard, appLive);
                         serverOverloaded = processStartAck(startAck);
                         System.out.println("serverOverloaded:" + serverOverloaded);
                         if (!serverOverloaded) {
@@ -102,6 +105,7 @@ public class Client extends Thread{
                         }
                     }
                 }
+                System.out.println("Handover Success: Found another server to receive the desired stream from.");
                 this.runNormal();
             }
             else this.runNormal();
@@ -111,6 +115,15 @@ public class Client extends Thread{
 			System.out.println("Connection: " + e.getMessage());
 		}
 	}
+
+    public static List toList(JSONArray array) throws JSONException {
+        List list = new ArrayList();
+        System.out.println("JSONArray Length: " + array.length());
+        for (int i = 0; i < array.length(); i++) {
+            list.add(fromJson(array.get(i)));
+        }
+        return list;
+    }
 
     private static Object fromJson(Object json) throws JSONException {
         if (json == JSONObject.NULL) {
@@ -122,15 +135,7 @@ public class Client extends Thread{
         }
     }
 
-    public static List toList(JSONArray array) throws JSONException {
-        List list = new ArrayList();
-        for (int i = 0; i < array.length(); i++) {
-            list.add(fromJson(array.get(i)));
-        }
-        return list;
-    }
-
-    private static String processHandoverFields(String key, String msg){
+    private static String processHandoverList(String key, String msg){
         JSONObject obj = null;
         String objString = null;
 
@@ -169,13 +174,13 @@ public class Client extends Thread{
         return false;
     }
 
-    private String establishConnection(int sp, String hn, int rp, int st, Scanner k, boolean a) {
+    private String processUntilStartAck(int sp, String hn, int rp, int st, Scanner k, boolean a) {
 
         String startAck = null;
 
         try{
             // connect to server
-            s = new Socket(hostName, rport);
+            s = new Socket(hn, rp);
             System.out.println("Connection established.");
             is = new DataInputStream(s.getInputStream());
             os = new DataOutputStream(s.getOutputStream());
@@ -199,9 +204,9 @@ public class Client extends Thread{
 
             StartRequest startReq;
             if(rateLimited)
-                startReq = new StartRequest(sleepTime, sport);
+                startReq = new StartRequest(st, sp);
             else
-                startReq = new StartRequest(sport);
+                startReq = new StartRequest(sp);
 
             String startMsg = startReq.toJSONString();
             os.writeUTF(startMsg);
