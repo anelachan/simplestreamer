@@ -11,12 +11,12 @@ public class ImgResponse extends Msg{
 	ImgResponse(String i){ 
 		imgData = i;
 		try{
-			obj.put("response","image");
-			obj.put("data",imgData);
+			obj.put("response", "image");
+			obj.put("data", imgData);
 		} catch(JSONException e) {
 			e.printStackTrace();
 			System.exit(-1);
-		}		
+		}
 	}
 
 }

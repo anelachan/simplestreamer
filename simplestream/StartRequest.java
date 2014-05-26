@@ -12,9 +12,8 @@ public class StartRequest extends Msg{
 	}
 
 	
-	StartRequest(int st){
-		if (st > 100)
-			sleepTime = st;
+	StartRequest(int sp){
+        sport = sp;
 		createJSON();	
 	}
 
