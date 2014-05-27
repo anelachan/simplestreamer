@@ -7,24 +7,62 @@ import org.kohsuke.args4j.Option;
 
 public class SimpleStreamer{
 
-    public final static int LOCAL_MODE = 0;
-    public final static int REMOTE_MODE = 1;
-    public static int mode;
+    /* for command line parsing */
+    private CommandLineValues values = null;
+    private CmdLineParser parser = null;
 
-    private int sport = 6262; //sport is port for serving connection requests
+    /* specifications */
+    private final static int LOCAL_MODE = 0;
+    private final static int REMOTE_MODE = 1;
+    private int mode;
+    // for serving connection requests as SERVER
+    private int sport = 6262; 
+    // for making a connection request as CLIENT
 	private String hostName = null;
 	private int rport = 6262;
 	private int sleepTime = 100;
-	boolean appLive = false;
 
+    /* utilities for running the app */
+	boolean appLive = false;
     private Scanner keyboard = null;
+    private Viewer myViewer = null;
+    private LocalViewer localViewer = null;
+    public static String img = null; // either WebCam or GetImgThread will write, LocalViewer reads
 
 	private SimpleStreamer(String[] args){
 
-        CommandLineValues values = new CommandLineValues(args);
-        CmdLineParser parser = new CmdLineParser(values);
+        this.setSpecifications(args);
+        appLive = true;
+        myViewer = new Viewer();
+        // localViewer = new LocalViewer(myViewer);
+        keyboard = new Scanner(System.in);
+        Server server = new Server(sport, appLive);
+        
 
+        // example command line argument for remote mode:
+        // -sport 6263 -remote localhost -rport 6262 -rate 400
+        if (mode == REMOTE_MODE) {
+            Client client = new Client(sport, hostName, rport, sleepTime, keyboard, appLive);
+            // img will be set in GetImgThread
+        }
+        else if (mode == LOCAL_MODE){
+            WebCam myWebCam = new WebCam();
+            // sets img from local webcam
+        } else
+            assert false;
+	}
+
+	public static void main(String[] args){
+
+		SimpleStreamer app = new SimpleStreamer(args);
+
+	}
+
+    private void setSpecifications(String[] args){
         // Parse command line arguments
+        values = new CommandLineValues(args);
+        parser = new CmdLineParser(values);
+
         try {
             parser.parseArgument(args);
         } catch (CmdLineException e) {
@@ -40,37 +78,21 @@ public class SimpleStreamer{
                 rport = values.getRport();
             if (values.getRate() != 0)
                 sleepTime = values.getRate();
+
+            this.setMode();
+
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(-1);
         }
+    }
 
-        appLive = true;
-        Viewer myViewer = new Viewer();
-        // uncomment line below prior to final projected delivery. commented out currently to ease load during testing.
-        // LocalViewer localViewer = new LocalViewer(myViewer);
-        Server server = new Server(sport, appLive);
-        keyboard = new Scanner(System.in);
-
-        if (hostName != null) {
-            // example command line argument for remote mode
-            // -sport 6263 -remote localhost -rport 6262 -rate 400
+    private void setMode(){
+        if (hostName != null)
             mode = REMOTE_MODE;
-            SetImgThread setImgThread = new SetImgThread();
-            Client client = new Client(sport, hostName, rport, sleepTime, keyboard, appLive);
-            // having 6 parameters is less than ideal but other option is nesting
-        }
-        else {
+        else
             mode = LOCAL_MODE;
-            SetImgThread setImgThread = new SetImgThread();
-        }
-	}
-
-	public static void main(String[] args){
-
-		SimpleStreamer app = new SimpleStreamer(args);
-
-	}
+    }
 
     // CommandLineValues employs the args4j library to extract command line arguments
     private static class CommandLineValues {

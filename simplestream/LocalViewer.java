@@ -2,7 +2,7 @@ package simplestream;
 
 import org.apache.commons.codec.binary.Base64;
 import org.json.JSONException;
-import org.json.simple.JSONObject;
+import org.json.JSONObject;
 
 
 
@@ -37,10 +37,10 @@ public class LocalViewer extends Thread {
         }
 
         while(true) {
-            if((img = SetImg.img) != null) {
+            if((img = SimpleStreamer.img) != null) {
 
                 try {
-                    org.json.JSONObject obj = new org.json.JSONObject(img);
+                    JSONObject obj = new JSONObject(img);
                     imgData = obj.get("data").toString();
                 } catch(JSONException e){
                     e.printStackTrace();

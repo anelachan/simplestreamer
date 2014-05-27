@@ -18,7 +18,7 @@ public class SendImgThread extends Thread{
 			try{
                 // Due to a 64k limit on DataOutputStream.writeUTF(), we have to
                 // simulate our own writeUTF that has no limitations on String length.
-                String msgSent = SetImg.img;
+                String msgSent = SimpleStreamer.img;
                 byte[] data = msgSent.getBytes("UTF-8");
                 os.writeInt(data.length);
                 os.write(data);

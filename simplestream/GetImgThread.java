@@ -42,15 +42,12 @@ public class GetImgThread extends Thread{
 	private void processMsg(String msg) throws InterruptedException{
 		try{
 			JSONObject obj = new JSONObject(msg);
-			if(obj.get("response").equals("stoppedstream")){ 
-			// for some reason, this msg is never printed and I don't know why...
-            // kc: FIXED. msg not received because stoppedstream msg was not
-            // being placed on outputstream (in MsgPassingThread)
-				socket.close();
+			if(!obj.get("response").equals("stoppedstream")){ 
+				SimpleStreamer.img = msg;
+			} else {
+                socket.close();
 				System.out.println("Closed connection.");
 				throw new InterruptedException();
-			} else {
-                SetImg.img = msg;
             }
 
 		} catch(IOException e){
