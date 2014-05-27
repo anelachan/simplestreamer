@@ -78,6 +78,8 @@ public class Client extends Thread{
             startRespJSON = new JSONObject(msg); // build JSONObject of resp
             if(startRespJSON.get("response").equals("overloaded"))
                 serverOverloaded = true;
+            else
+                serverOverloaded = false;
         } catch(JSONException e){
             e.printStackTrace();
             System.exit(-1);
@@ -95,10 +97,11 @@ public class Client extends Thread{
         // TODO: do not do this if the field doesn't exist!
         JSONArray clientJSONArray = null;
         try {
-            JSONObject serverJSON = new JSONObject(startRespJSON.get("server"));
+            JSONObject serverJSON = new JSONObject(startRespJSON.get("server").toString());
+            System.out.println("serverJSON: " + serverJSON.toString());
             hostName = (String)serverJSON.get("ip");
             rport = (Integer)serverJSON.get("port");
-            clientJSONArray = new JSONArray(startRespJSON.get("clients"));
+            clientJSONArray = new JSONArray(startRespJSON.get("clients").toString());
         }
         catch (JSONException e) {
             System.out.println("JSONObject: " + e.getMessage());
@@ -116,15 +119,14 @@ public class Client extends Thread{
             if (!serverOverloaded)
                 break;
 
-
             // Next try each of the 3 clients in the overloaded msg response
             for (int i = 0; i < clientJSONArray.length(); i++) {
                 try {
-                    JSONObject clientJSON = new JSONObject(clientJSONArray.get(i));
-                    hostName = (String)clientJSON.get("ip");
+                    JSONObject clientJSON = new JSONObject(clientJSONArray.get(i).toString());
+                    hostName = (String)clientJSON.get("ip").toString();
                     rport = (Integer) clientJSON.get("port");
                 } catch (JSONException e) {
-                    System.out.println("JSONObject: " + e.getMessage());
+                    System.out.println("Overloaded JSONObject: " + e.getMessage());
                 }
                     System.out.println("Client " + i + " - IP: " + hostName + " port: " + Integer.toString(rport));
                     this.connectStart();
