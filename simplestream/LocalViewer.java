@@ -1,3 +1,9 @@
+/* LocalViewer.java
+ * Created by kingchan on 22/05/2014.
+ * Description: Runs a 320x240 viewer for the local 
+ * instance of SimpleStreamer.
+ */
+
 package simplestream;
 
 import org.apache.commons.codec.binary.Base64;
@@ -9,9 +15,7 @@ import org.json.JSONObject;
 import javax.swing.*;
 import java.util.concurrent.ArrayBlockingQueue;
 
-/**
- * Created by kingchan on 22/05/2014.
- */
+
 public class LocalViewer extends Thread {
 
     Viewer myViewer = null;

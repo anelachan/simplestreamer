@@ -1,3 +1,10 @@
+/* SendImgThread.java
+* Author: Anela Chan and King Chan
+* Date: 29 May 2014
+* Description: Instantiated by MsgPassingThread, sends out the image
+* data while the MsgPassingThread concurrently polls for a stop request.
+*/
+
 package simplestream;
 import java.net.*;
 import java.io.*;
@@ -5,7 +12,6 @@ import java.io.*;
 public class SendImgThread extends Thread{
 	private DataOutputStream os = null;
 	private int sleepTime = 100;
-    private SimpleStreamer mySimpleStreamer = null;
 
 	SendImgThread(DataOutputStream myOS, int st){
 		os = myOS;
@@ -14,7 +20,7 @@ public class SendImgThread extends Thread{
 	}
 
 	public void run(){
-		while(true){
+		while(!Thread.interrupted()){
 			try{
                 // Due to a 64k limit on DataOutputStream.writeUTF(), we have to
                 // simulate our own writeUTF that has no limitations on String length.
@@ -22,16 +28,12 @@ public class SendImgThread extends Thread{
                 byte[] data = msgSent.getBytes("UTF-8");
                 os.writeInt(data.length);
                 os.write(data);
-
-                // System.out.println("Sent: " + msgSent);
 				Thread.sleep(sleepTime);
 			} catch(InterruptedException e){
 				return;
-			} catch(IOException e){
-				System.out.println("SendImgThread: "+e.getMessage());
+			} catch(IOException ignored){
 			}
-			if(Thread.interrupted())
-				return;
-		}	
+		}
+		return;
 	}
 }

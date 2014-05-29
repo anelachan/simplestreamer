@@ -1,9 +1,24 @@
+/* Client.java
+Authors: Anela Chan and King Chan
+Date: 29 May 2014
+Description: Run if SimpleStreamer is in remote mode, the Client connects
+to a remote SimpleStreamer server process and passes messages according to
+the protocol. Once startingstream begins, the Client begins a GetImgThread 
+which takes over the input stream and is responsible for closing the socket 
+in the case of a request to end the stream. 
+Handover functionality is also implemented in the Client, as the Client will 
+read an overloaded response and attempt to make a new connection.
+*/
+
+
 package simplestream;
 import java.net.*;
 import java.io.*;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.concurrent.ArrayBlockingQueue;
+
 import org.json.JSONObject;
 import org.json.JSONException;
 import org.json.JSONArray;
@@ -21,18 +36,16 @@ public class Client extends Thread{
     private int sport;
 	private int sleepTime;
 
-    /* passed from SimpleStreamer to kill application */
-    // CHANGE?
-	private Scanner keyboard; 
-	boolean appLive = false;
+    /* receive from server */
+    private String startResp = null;
+    private JSONObject startRespJSON = null;
+    private boolean rateLimited = false;
+    private boolean serverOverloaded = false;
+    private ArrayList<JSONObject> handoverArrayList = null;
 
-    /* information from server */
-    String startResp = null;
-    JSONObject startRespJSON = null;
-    boolean rateLimited = false;
-    boolean serverOverloaded = false;
+    private volatile boolean stop = false;
 
-	Client(int sp, String hn, int rp, int st, Scanner k, boolean a){
+	Client(String hn, int rp, int sp, int st){
 		
 		hostName = hn;
 		rport = rp;
@@ -40,14 +53,11 @@ public class Client extends Thread{
         sport = sp;
 		sleepTime = st;
 
-		keyboard = k;
-		appLive = a;
 		this.start();
 	}
 
 	@Override
-	public void run(){
-
+	public void run() {
         try{
             this.connectStart();
             if(serverOverloaded) 
@@ -58,10 +68,12 @@ public class Client extends Thread{
 			System.out.println("Socket: " + e.getMessage());
 		} catch(IOException e){
 			System.out.println("Connection: " + e.getMessage());
-		}
+		} catch (JSONException e){
+            System.out.println("JSONObject: " + e.getMessage());
+        }
 	}
 
-    private void connectStart() throws IOException, UnknownHostException{
+    private void connectStart() throws IOException, UnknownHostException, JSONException{
         // connect to server
         this.makeConnection();
         // receive and process status response
@@ -73,73 +85,6 @@ public class Client extends Thread{
         processStartResp(startResp);   
     }
 
-    private void processStartResp(String msg){
-        try{
-            startRespJSON = new JSONObject(msg); // build JSONObject of resp
-            if(startRespJSON.get("response").equals("overloaded"))
-                serverOverloaded = true;
-            else
-                serverOverloaded = false;
-        } catch(JSONException e){
-            e.printStackTrace();
-            System.exit(-1);
-        }
-    }
-
-    private void runHandover() throws UnknownHostException, IOException{
-        // Close current datastreams and socket
-        System.out.println("Sorry server is overloaded.");
-        is.close();
-        os.close();
-        s.close();
-
-        // first reset host, rport to remote's remote server's
-        // TODO: do not do this if the field doesn't exist!
-        JSONArray clientJSONArray = null;
-        try {
-            JSONObject serverJSON = new JSONObject(startRespJSON.get("server").toString());
-            System.out.println("serverJSON: " + serverJSON.toString());
-            hostName = (String)serverJSON.get("ip");
-            rport = (Integer)serverJSON.get("port");
-            clientJSONArray = new JSONArray(startRespJSON.get("clients").toString());
-        }
-        catch (JSONException e) {
-            System.out.println("JSONObject: " + e.getMessage());
-        }
-
-        //System.out.println("Server - IP: " + serverIP + " port: " + serverPort);
-
-        while(serverOverloaded) {
-
-            // First try the server in the overloaded msg response
-            System.out.println("Server - IP: " + hostName + " port: " + Integer.toString(rport));
-            this.connectStart();
-            
-            System.out.println("serverOverloaded:" + serverOverloaded);
-            if (!serverOverloaded)
-                break;
-
-            // Next try each of the 3 clients in the overloaded msg response
-            for (int i = 0; i < clientJSONArray.length(); i++) {
-                try {
-                    JSONObject clientJSON = new JSONObject(clientJSONArray.get(i).toString());
-                    hostName = (String)clientJSON.get("ip").toString();
-                    rport = (Integer) clientJSON.get("port");
-                } catch (JSONException e) {
-                    System.out.println("Overloaded JSONObject: " + e.getMessage());
-                }
-                    System.out.println("Client " + i + " - IP: " + hostName + " port: " + Integer.toString(rport));
-                    this.connectStart();
-                    System.out.println("serverOverloaded:" + serverOverloaded);
-                    if (!serverOverloaded) {
-                        break;                        }
-                    }
-                }
-            System.out.println("Handover Success: Found another server to receive the desired stream from.");
-            this.runNormal();
-
-    }
-
     private void makeConnection() throws UnknownHostException, IOException{
         s = new Socket(hostName, rport);
         System.out.println("Connection established.");
@@ -147,15 +92,19 @@ public class Client extends Thread{
         os = new DataOutputStream(s.getOutputStream());
     }
 
-    private void processStatusResp(String msg) throws UnknownHostException, IOException{
-        try{
-            JSONObject obj = new JSONObject(msg);
-            if(obj.get("ratelimiting").equals("yes"))
-                rateLimited = true;
-        } catch(JSONException e){
-            e.printStackTrace();
-            System.exit(-1);
-        }
+    private void processStatusResp(String msg) throws JSONException{
+        JSONObject obj = new JSONObject(msg);
+        if(obj.get("ratelimiting").equals("yes"))
+            rateLimited = true;
+
+    }
+
+    private void processStartResp(String msg) throws JSONException{
+        startRespJSON = new JSONObject(msg); // build JSONObject of resp
+        if(startRespJSON.get("response").equals("overloaded"))
+            serverOverloaded = true;
+        else
+            serverOverloaded = false;
     }
 
     private void makeStartRequest() throws UnknownHostException, IOException{
@@ -165,25 +114,83 @@ public class Client extends Thread{
         os.writeUTF(startReq.toJSONString());  
     }
 
-	private void runNormal(){
-		// start receiving images
-		GetImgThread getImgThread = new GetImgThread(s,is);
-		if(keyboard.nextLine().isEmpty()){
-			StopRequest stopReq = new StopRequest();
-			String stopMsg = stopReq.toJSONString();
-			try{
-				os.writeUTF(stopMsg);	
-			} catch(IOException e){
-				System.out.println("Connection: " + e.getMessage());
-			}		
-		}
-		/* when it receives stoppedstream ack, 
-			GetImgThread will stop ITSELF (that thread has now taken over the input stream)
-			AND close the connection. the only way to do this synchronously...
-			should also add functionality so that it kills ALL other threads
-			including the Server by flagging the appLive as false. 
-			btw it is also possible to nest the thread inside Client...
-			not sure which is better */
-	}
+    private void runNormal() throws IOException{
+        // start receiving images
+        GetImgThread getImgThread = new GetImgThread(s,is,os);
+
+        // entering new line on client side will trigger stop
+        while(true){
+            if (stop) {
+                break;
+            }
+        }
+
+        // send out stop request
+        StopRequest stopReq = new StopRequest();
+        String stopMsg = stopReq.toJSONString();
+        os.writeUTF(stopMsg);  
+        System.out.println("Sent: " + stopMsg);
+        
+        /* handling final stoppedstream ack happens in GetImgThread
+        as GetImgThread has taken over the input stream 
+        GetImgThread will close the streams and socket. */
+    }
+
+    public void stopClient(){
+        stop = true;
+    }
+
+    private void fillHandoverArrayList(JSONObject startRespJSON) throws JSONException{
+
+        if (handoverArrayList == null) {
+            handoverArrayList = new ArrayList<JSONObject>();
+        }
+
+        if (startRespJSON.has("server")) {
+            JSONObject serverJSON = new JSONObject(startRespJSON.get("server").toString());
+            handoverArrayList.add(serverJSON);
+        }
+
+        JSONArray clientJSONArray = new JSONArray(startRespJSON.get("clients").toString());
+
+        for (int i = 0; i < clientJSONArray.length(); i++) {
+            JSONObject clientJSON = (JSONObject) clientJSONArray.get(i);
+            handoverArrayList.add(clientJSON);
+        }
+
+        System.out.println("handoverArrayList:" + handoverArrayList);
+    }
+
+    private void runHandover() throws UnknownHostException, IOException, JSONException {
+        // Close current datastreams and socket
+        System.out.println("Sorry server is overloaded.");
+        is.close();
+        os.close();
+        s.close();
+
+        while(serverOverloaded) {
+
+            this.fillHandoverArrayList(startRespJSON);
+
+            System.out.println("serverOverloaded:" + serverOverloaded);
+
+            JSONObject handoverJSON = null;
+            try {
+                handoverJSON = handoverArrayList.remove(0);
+            } catch (NullPointerException e) {
+                System.out.println("No alternate servers available");
+                System.exit(0);
+                // close client
+            }
+            hostName = (String) handoverJSON.get("ip");
+            rport = (Integer) handoverJSON.get("port");
+            System.out.println("Server - IP: " + hostName + " port: " + Integer.toString(rport));
+            this.connectStart();
+            if (!serverOverloaded)
+                break;
+        }
+        System.out.println("Handover Success: Found another server to receive the desired stream from.");
+        this.runNormal();
+    }
 
 }

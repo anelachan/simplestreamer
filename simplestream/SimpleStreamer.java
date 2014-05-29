@@ -1,3 +1,13 @@
+/* SimpleStreamer.java
+* Author: Anela Chan and King Chan
+* Date: 29 May 2014
+* Description: Runs a streaming application with a viewer. 
+* Always acts as a server that can accept connections and send out the stream 
+* to remote clients. If in Local mode: run webcam thread. If in Remote mode: 
+* act as client to connect to remote SimpleStreamer and receive stream.
+* To kill the application, whether in local or remote mode, enter a newline.
+*/
+
 package simplestream;
 import java.util.Scanner;
 
@@ -23,40 +33,53 @@ public class SimpleStreamer{
 	private int sleepTime = 100;
 
     /* utilities for running the app */
-	boolean appLive = false;
-    private Scanner keyboard = null;
     private Viewer myViewer = null;
     private LocalViewer localViewer = null;
     public static String img = null; // either WebCam or GetImgThread will write, LocalViewer reads
+    private Server server = null;
+    private Client client = null; // if remote mode
+    private WebCam myWebCam = null; // if local mode
 
-	private SimpleStreamer(String[] args){
+	SimpleStreamer(String[] args){
 
         this.setSpecifications(args);
-        appLive = true;
         myViewer = new Viewer();
         // localViewer = new LocalViewer(myViewer);
-        keyboard = new Scanner(System.in);
-        Server server = new Server(sport, appLive);
         
-
         // example command line argument for remote mode:
         // -sport 6263 -remote localhost -rport 6262 -rate 400
         if (mode == REMOTE_MODE) {
-            Client client = new Client(sport, hostName, rport, sleepTime, keyboard, appLive);
+            server = new Server(sport, hostName, rport);
+            client = new Client(hostName, rport, sport, sleepTime);
             // img will be set in GetImgThread
         }
         else if (mode == LOCAL_MODE){
-            WebCam myWebCam = new WebCam();
+            server = new Server(sport);
+            myWebCam = new WebCam();
             // sets img from local webcam
-        } else
+        } 
+        else
             assert false;
+            
 	}
 
 	public static void main(String[] args){
-
-		SimpleStreamer app = new SimpleStreamer(args);
-
+        SimpleStreamer app = new SimpleStreamer(args);
+        Scanner keyboard = new Scanner(System.in);
+        if (keyboard.nextLine().isEmpty())
+            app.kill();
+        return;
+        
 	}
+
+    public void kill(){
+        if (mode == LOCAL_MODE)
+            myWebCam.interrupt();
+        if (mode == REMOTE_MODE)
+            client.stopClient();
+        server.interrupt();
+
+    }
 
     private void setSpecifications(String[] args){
         // Parse command line arguments

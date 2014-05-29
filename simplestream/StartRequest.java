@@ -1,3 +1,11 @@
+/* StartRequest.java
+* Author: Anela Chan
+* Date: 15 May 2014
+* Description: Creates a startstream request with optional ratelimit.
+* If sport specified on command-line then set accordingly.
+* Inherits from Msg.
+*/
+
 package simplestream;
 import org.json.JSONObject;
 import org.json.JSONException;
