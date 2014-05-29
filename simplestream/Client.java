@@ -171,7 +171,6 @@ public class Client extends Thread{
         while(serverOverloaded) {
 
             this.fillHandoverArrayList(startRespJSON);
-
             System.out.println("serverOverloaded:" + serverOverloaded);
 
             JSONObject handoverJSON = null;
