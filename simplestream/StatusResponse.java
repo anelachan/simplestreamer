@@ -8,7 +8,7 @@
 */
 
 package simplestream;
-import org.json.JSONObject;
+
 import org.json.JSONException;
 
 public class StatusResponse extends Msg{

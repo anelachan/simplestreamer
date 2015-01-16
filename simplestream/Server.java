@@ -53,8 +53,10 @@ public class Server extends Thread{
 				// add to addresses ArrayList
 				SocketAddress clientIP = clientSocket.getRemoteSocketAddress();
 				String clientIPString = editIP(clientIP);
-				addToConnections(clientIPString);
-				System.out.println("Received connection, IP: " + clientIPString);
+				// if on same machine, change IP from localhost
+				if(clientIPString.equals("127.0.0.1"))
+					clientIPString = InetAddress.getLocalHost().toString().split("/")[1];
+                addToConnections(clientIPString);
 
 				// spawn new client thread
 				MsgPassingThread clientThread = new MsgPassingThread(
@@ -117,6 +119,7 @@ public class Server extends Thread{
 	private void addToConnections(String clientIP) throws JSONException{
 		JSONObject obj = new JSONObject();
 		obj.put("ip",clientIP);
+        System.out.println("clientIP added to connections in Server: " + clientIP);
 		connections.add(obj);
 	}
 

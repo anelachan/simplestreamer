@@ -7,7 +7,7 @@
 
 
 package simplestream;
-import org.json.JSONObject;
+
 import org.json.JSONException;
 
 public class StopRequest extends Msg{

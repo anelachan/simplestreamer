@@ -10,6 +10,7 @@ server. When it receives it will close the socket and stop.
 */
 
 package simplestream;
+
 import java.net.*;
 import java.io.*;
 import org.json.JSONObject;

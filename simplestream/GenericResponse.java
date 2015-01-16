@@ -6,7 +6,7 @@ with only one field. Inherits from Msg.
 */
 
 package simplestream;
-import org.json.JSONObject;
+
 import org.json.JSONException;
 
 public class GenericResponse extends Msg{

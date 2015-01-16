@@ -6,7 +6,7 @@ both fields "response": "image" and "data": [compressed image data]
 */
 
 package simplestream;
-import org.json.JSONObject;
+
 import org.json.JSONException;
 
 public class ImgResponse extends Msg{

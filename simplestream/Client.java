@@ -14,10 +14,7 @@ read an overloaded response and attempt to make a new connection.
 package simplestream;
 import java.net.*;
 import java.io.*;
-import java.util.*;
 import java.util.ArrayList;
-import java.util.Scanner;
-import java.util.concurrent.ArrayBlockingQueue;
 
 import org.json.JSONObject;
 import org.json.JSONException;
@@ -151,11 +148,12 @@ public class Client extends Thread{
             handoverArrayList.add(serverJSON);
         }
 
-        JSONArray clientJSONArray = new JSONArray(startRespJSON.get("clients").toString());
-
-        for (int i = 0; i < clientJSONArray.length(); i++) {
-            JSONObject clientJSON = (JSONObject) clientJSONArray.get(i);
-            handoverArrayList.add(clientJSON);
+        if (startRespJSON.has("clients")) {
+            JSONArray clientJSONArray = new JSONArray(startRespJSON.get("clients").toString());
+            for (int i = 0; i < clientJSONArray.length(); i++) {
+                JSONObject clientJSON = (JSONObject) clientJSONArray.get(i);
+                handoverArrayList.add(clientJSON);
+            }
         }
 
         System.out.println("handoverArrayList:" + handoverArrayList);

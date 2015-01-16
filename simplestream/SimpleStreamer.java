@@ -43,8 +43,8 @@ public class SimpleStreamer{
 	SimpleStreamer(String[] args){
 
         this.setSpecifications(args);
-        myViewer = new Viewer();
-        // localViewer = new LocalViewer(myViewer);
+        //myViewer = new Viewer();
+        //localViewer = new LocalViewer(myViewer);
         
         // example command line argument for remote mode:
         // -sport 6263 -remote localhost -rport 6262 -rate 400
@@ -78,7 +78,7 @@ public class SimpleStreamer{
         if (mode == REMOTE_MODE)
             client.stopClient();
         server.interrupt();
-
+        System.exit(0);
     }
 
     private void setSpecifications(String[] args){

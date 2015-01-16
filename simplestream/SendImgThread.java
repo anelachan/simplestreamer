@@ -6,7 +6,6 @@
 */
 
 package simplestream;
-import java.net.*;
 import java.io.*;
 
 public class SendImgThread extends Thread{

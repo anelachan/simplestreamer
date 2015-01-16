@@ -13,8 +13,6 @@ package simplestream;
 import java.net.*;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.concurrent.ArrayBlockingQueue;
 import org.json.JSONObject;
 import org.json.JSONException;
 
@@ -39,10 +37,13 @@ public class MsgPassingThread extends Thread{
 	private boolean stopStream = false;
 	private SendImgThread sendImgThread = null;
 
+    private Server server;
+
 	MsgPassingThread(Socket s, ArrayList<JSONObject> addresses, JSONObject rsd){
 		socket = s;
-		connections = addresses; 
+		connections = addresses;
 		numClients = addresses.size();
+        System.out.println("addresses.size: " +addresses.size());
 		remoteServerData = rsd;
 		try{
 			is = new DataInputStream(socket.getInputStream());
@@ -74,6 +75,7 @@ public class MsgPassingThread extends Thread{
 				if(numClients <= 3)
 					this.runNormal(startMsg);
 				else{
+                    connections.remove(3); // remove the last attempted connection, which caused the overload
 					connections = new ArrayList<JSONObject>(connections.subList(0,3)); // slice to size 3
 					OverloadedResponse overloadResp = new OverloadedResponse(connections,remoteServerData);
 					String overloadMsg = overloadResp.toJSONString();
@@ -109,7 +111,7 @@ public class MsgPassingThread extends Thread{
 		while(!stopStream){
 			String msgReceived = is.readUTF();
 			System.out.println("Received: " + msgReceived);
-			processStop(msgReceived);
+            processStop(msgReceived);
 		}
 
 		// when stopstream request received, interrupt, send ack, close.
@@ -126,9 +128,9 @@ public class MsgPassingThread extends Thread{
 
 			System.out.println("Sent: " + stopMsg);
 
-			// give a moment for client to receive stoppedstream
+			// give client 5 seconds to receive stoppedstream
 			try{
-				Thread.sleep(500); 
+				Thread.sleep(5000); 
 			} catch(InterruptedException e){
 				Thread.currentThread().interrupt();
 				return;
@@ -140,8 +142,8 @@ public class MsgPassingThread extends Thread{
 			socket.close();
 			System.out.println("Connection closed.");
 
-			// remove client from list of connections
-			connections.remove(clientData);
+            connections.remove(clientData);
+            System.out.println("Connected clients: " + connections.toString());
 		}
 
 	}
