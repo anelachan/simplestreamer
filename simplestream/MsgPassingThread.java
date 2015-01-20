@@ -37,7 +37,7 @@ public class MsgPassingThread extends Thread{
 	private boolean stopStream = false;
 	private SendImgThread sendImgThread = null;
 
-    private Server server;
+  private Server server;
 
 	MsgPassingThread(Socket s, ArrayList<JSONObject> addresses, JSONObject rsd){
 		socket = s;
@@ -75,7 +75,7 @@ public class MsgPassingThread extends Thread{
 				if(numClients <= 3)
 					this.runNormal(startMsg);
 				else{
-                    connections.remove(3); // remove the last attempted connection, which caused the overload
+          connections.remove(3); // remove the last attempted connection, which caused the overload
 					connections = new ArrayList<JSONObject>(connections.subList(0,3)); // slice to size 3
 					OverloadedResponse overloadResp = new OverloadedResponse(connections,remoteServerData);
 					String overloadMsg = overloadResp.toJSONString();
@@ -111,7 +111,7 @@ public class MsgPassingThread extends Thread{
 		while(!stopStream){
 			String msgReceived = is.readUTF();
 			System.out.println("Received: " + msgReceived);
-            processStop(msgReceived);
+      processStop(msgReceived);
 		}
 
 		// when stopstream request received, interrupt, send ack, close.
@@ -122,9 +122,9 @@ public class MsgPassingThread extends Thread{
 			GenericResponse stopResp = new GenericResponse("stoppedstream");
 			String stopMsg = stopResp.toJSONString();
 
-            byte[] data = stopMsg.getBytes("UTF-8");
-            os.writeInt(data.length);
-            os.write(data);
+      byte[] data = stopMsg.getBytes("UTF-8");
+      os.writeInt(data.length);
+      os.write(data);
 
 			System.out.println("Sent: " + stopMsg);
 
@@ -142,8 +142,8 @@ public class MsgPassingThread extends Thread{
 			socket.close();
 			System.out.println("Connection closed.");
 
-            connections.remove(clientData);
-            System.out.println("Connected clients: " + connections.toString());
+      connections.remove(clientData);
+      System.out.println("Connected clients: " + connections.toString());
 		}
 
 	}
@@ -160,7 +160,7 @@ public class MsgPassingThread extends Thread{
 		}
 		if(obj.has("sport")){
 			sport = (Integer)obj.get("sport"); // otherwise defaults to 6262
-        }
+    }
 
 		/* store client port info */
 		clientData = connections.get(connections.size() - 1);

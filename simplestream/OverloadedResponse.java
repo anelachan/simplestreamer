@@ -32,7 +32,6 @@ public class OverloadedResponse extends Msg{
 			e.printStackTrace();
 			System.exit(-1);
 		}
-		
 	}
 
 	private void setConnectionList(){

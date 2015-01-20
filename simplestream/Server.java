@@ -29,8 +29,8 @@ public class Server extends Thread{
 		sport = sp;
 	    connections = new ArrayList<JSONObject>(3);
 	    clientThreads = new ArrayList<MsgPassingThread>(3);
-        this.setSocket();
-        this.start();
+	    this.setSocket();
+	    this.start();
     }
 
     // if SimpleStreamer in remote mode
@@ -40,9 +40,9 @@ public class Server extends Thread{
 		rport = rp;
 	    connections = new ArrayList<JSONObject>(3);
 	    clientThreads = new ArrayList<MsgPassingThread>(3);
-        this.setSocket();
-        this.setServerData();
-        this.start();
+      this.setSocket();
+      this.setServerData();
+      this.start();
     }
 
 	public void run(){
@@ -119,7 +119,7 @@ public class Server extends Thread{
 	private void addToConnections(String clientIP) throws JSONException{
 		JSONObject obj = new JSONObject();
 		obj.put("ip",clientIP);
-        System.out.println("clientIP added to connections in Server: " + clientIP);
+    System.out.println("clientIP added to connections in Server: " + clientIP);
 		connections.add(obj);
 	}
 

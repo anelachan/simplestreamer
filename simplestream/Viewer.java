@@ -12,9 +12,9 @@ public class Viewer extends JPanel{
 	private BufferedImage image;
 
     private int[] toIntArray(byte[] barr) {
-            int[] result = new int[barr.length];
-            for(int i=0;i<barr.length;i++)result[i]=barr[i];
-            return result;
+        int[] result = new int[barr.length];
+        for(int i=0;i<barr.length;i++)result[i]=barr[i];
+        return result;
     }
 
     public Viewer() {

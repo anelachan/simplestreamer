@@ -43,15 +43,15 @@ public class SimpleStreamer{
 	SimpleStreamer(String[] args){
 
         this.setSpecifications(args);
-        //myViewer = new Viewer();
-        //localViewer = new LocalViewer(myViewer);
+        myViewer = new Viewer();
+        localViewer = new LocalViewer(myViewer);
         
         // example command line argument for remote mode:
         // -sport 6263 -remote localhost -rport 6262 -rate 400
         if (mode == REMOTE_MODE) {
             server = new Server(sport, hostName, rport);
             client = new Client(hostName, rport, sport, sleepTime);
-            // img will be set in GetImgThread
+            // img will be set in ImgThread
         }
         else if (mode == LOCAL_MODE){
             server = new Server(sport);

@@ -21,12 +21,12 @@ public class SendImgThread extends Thread{
 	public void run(){
 		while(!Thread.interrupted()){
 			try{
-                // Due to a 64k limit on DataOutputStream.writeUTF(), we have to
-                // simulate our own writeUTF that has no limitations on String length.
-                String msgSent = SimpleStreamer.img;
-                byte[] data = msgSent.getBytes("UTF-8");
-                os.writeInt(data.length);
-                os.write(data);
+	      // Due to a 64k limit on DataOutputStream.writeUTF(), we have to
+	      // simulate our own writeUTF that has no limitations on String length.
+	      String msgSent = SimpleStreamer.img;
+	      byte[] data = msgSent.getBytes("UTF-8");
+	      os.writeInt(data.length);
+	      os.write(data);
 				Thread.sleep(sleepTime);
 			} catch(InterruptedException e){
 				return;

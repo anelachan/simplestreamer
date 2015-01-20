@@ -21,7 +21,7 @@ public class StartRequest extends Msg{
 
 	
 	StartRequest(int sp){
-        sport = sp;
+    sport = sp;
 		createJSON();	
 	}
 

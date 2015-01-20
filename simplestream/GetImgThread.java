@@ -32,14 +32,14 @@ public class GetImgThread extends Thread{
 	public void run(){
 		while(true){
 			try{
-                // Due to a 64k limit on DataOutputStream.writeUTF(), we have to
-                // simulate our own writeUTF that has no limitations on String length.
-                // Here, we have created our own 'version' of DataInputStream.readUTF()
-                int length = is.readInt();
-                byte[] data = new byte[length];
-                is.readFully(data);
-                String msgReceived = new String(data,"UTF-8");
-                processMsg(msgReceived); // will stop and CLOSE SOCKET if receive "stoppedstream"
+	      // Due to a 64k limit on DataOutputStream.writeUTF(), we have to
+	      // simulate our own writeUTF that has no limitations on String length.
+	      // Here, we have created our own 'version' of DataInputStream.readUTF()
+	      int length = is.readInt();
+	      byte[] data = new byte[length];
+	      is.readFully(data);
+	      String msgReceived = new String(data,"UTF-8");
+	      processMsg(msgReceived); // will stop and CLOSE SOCKET if receive "stoppedstream"
 				
 			} catch(IOException e){
 				System.out.println("Connection " + e.getMessage());
@@ -71,11 +71,11 @@ public class GetImgThread extends Thread{
 				System.out.println("Received: " + msg);
 				is.close();
 				os.close();
-                socket.close();
+        socket.close();
 				System.out.println("Closed connection.");
 				throw new InterruptedException();
-            } else
-            	assert false;
+      } else
+      	assert false;
 		} catch(JSONException e){
 			e.printStackTrace();
 			System.exit(-1);
